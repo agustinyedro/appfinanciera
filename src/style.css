@@ -1,0 +1,141 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  @apply bg-base-200 text-base-content;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+html[data-theme='light-default'] {
+  --color-primary: 59 130 246; /* blue-500 */
+  --color-primary-focus: 37 99 235; /* blue-600 */
+  --color-primary-content: 255 255 255;
+  
+  --color-secondary: 239 68 68; /* red-500 */
+  --color-secondary-focus: 220 38 38; /* red-600 */
+  --color-secondary-content: 255 255 255;
+
+  --color-accent: 16 185 129; /* green-500 */
+  --color-accent-focus: 5 150 105; /* green-600 */
+  --color-accent-content: 255 255 255;
+
+  --color-neutral: 55 65 81; /* gray-600 */
+  --color-neutral-focus: 31 41 55; /* gray-700 */
+  --color-neutral-content: 255 255 255;
+  
+  --color-base-100: 255 255 255; /* white */
+  --color-base-200: 243 244 246; /* gray-100 */
+  --color-base-300: 229 231 235; /* gray-200 */
+  --color-base-content: 17 24 39; /* gray-900 */
+
+  --color-info: 59 130 246;
+  --color-success: 34 197 94;
+  --color-warning: 245 158 11;
+  --color-error: 239 68 68;
+}
+
+html[data-theme='light-mint'] {
+  --color-primary: 45 212 191; /* teal-400 */
+  --color-primary-focus: 20 184 166; /* teal-500 */
+  --color-primary-content: 17 24 39;
+
+  --color-secondary: 251 146 60; /* orange-400 */
+  --color-secondary-focus: 249 115 22; /* orange-500 */
+  --color-secondary-content: 17 24 39;
+
+  --color-accent: 139 92 246; /* violet-500 */
+  --color-accent-focus: 124 58 237; /* violet-600 */
+  --color-accent-content: 255 255 255;
+
+  --color-neutral: 75 85 99;
+  --color-neutral-focus: 55 65 81;
+  --color-neutral-content: 255 255 255;
+  
+  --color-base-100: 255 255 255;
+  --color-base-200: 240 253 250; /* teal-50 */
+  --color-base-300: 204 251 241; /* teal-100 */
+  --color-base-content: 17 24 39;
+
+  --color-info: 59 130 246;
+  --color-success: 34 197 94;
+  --color-warning: 245 158 11;
+  --color-error: 239 68 68;
+}
+
+html[data-theme='dark-default'] {
+  --color-primary: 59 130 246; /* blue-500 */
+  --color-primary-focus: 96 165 250; /* blue-400 */
+  --color-primary-content: 255 255 255;
+
+  --color-secondary: 239 68 68; /* red-500 */
+  --color-secondary-focus: 248 113 113; /* red-400 */
+  --color-secondary-content: 255 255 255;
+
+  --color-accent: 16 185 129; /* green-500 */
+  --color-accent-focus: 52 211 153; /* green-400 */
+  --color-accent-content: 17 24 39;
+
+  --color-neutral: 30 41 59; /* slate-800 */
+  --color-neutral-focus: 51 65 85; /* slate-700 */
+  --color-neutral-content: 226 232 240; /* slate-200 */
+
+  --color-base-100: 15 23 42; /* slate-900 */
+  --color-base-200: 30 41 59; /* slate-800 */
+  --color-base-300: 51 65 85; /* slate-700 */
+  --color-base-content: 226 232 240; /* slate-200 */
+
+  --color-info: 96 165 250;
+  --color-success: 74 222 128;
+  --color-warning: 251 191 36;
+  --color-error: 248 113 113;
+}
+
+html[data-theme='dark-dracula'] {
+  --color-primary: 189 147 249; /* dracula-purple */
+  --color-primary-focus: 217 192 255;
+  --color-primary-content: 30 30 42;
+
+  --color-secondary: 255 121 198; /* dracula-pink */
+  --color-secondary-focus: 255 157 228;
+  --color-secondary-content: 30 30 42;
+
+  --color-accent: 80 250 123; /* dracula-green */
+  --color-accent-focus: 120 255 163;
+  --color-accent-content: 30 30 42;
+
+  --color-neutral: 68 71 90; /* dracula-comment */
+  --color-neutral-focus: 85 88 107;
+  --color-neutral-content: 248 248 242; /* dracula-foreground */
+
+  --color-base-100: 40 42 54; /* dracula-bg */
+  --color-base-200: 30 31 41; /* dracula-bg-darker */
+  --color-base-300: 68 71 90; /* dracula-comment */
+  --color-base-content: 248 248 242; /* dracula-foreground */
+
+  --color-info: 139 233 253; /* dracula-cyan */
+  --color-success: 80 250 123; /* dracula-green */
+  --color-warning: 255 184 108; /* dracula-orange */
+  --color-error: 255 85 85; /* dracula-red */
+}
