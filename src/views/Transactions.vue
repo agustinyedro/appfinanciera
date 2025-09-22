@@ -154,9 +154,9 @@
       </div>
     </div>
 
-    <!-- Add/Edit Transaction Modal -->
+    <!-- Edit Transaction Modal -->
     <TransactionModal 
-      v-if="showAddTransaction || editingTransaction"
+      v-if="editingTransaction"
       :transaction="editingTransaction"
       @close="closeModal"
       @save="handleSaveTransaction"
@@ -168,6 +168,7 @@
 import { ref, computed } from 'vue'
 import { useDatabaseStore } from '@/stores/database'
 import { storeToRefs } from 'pinia'
+import { showAddTransaction } from '@/composables/useModal'
 import { 
   Plus, 
   Edit, 
@@ -183,7 +184,6 @@ import type { Transaction } from '../types'
 const databaseStore = useDatabaseStore()
 const { transactions, accounts, tags } = storeToRefs(databaseStore)
 
-const showAddTransaction = ref(false)
 const editingTransaction = ref<Transaction | null>(null)
 const currentPage = ref(1)
 const itemsPerPage = 10
@@ -235,18 +235,17 @@ const formatDate = (date: string) => {
 
 const editTransaction = (transaction: Transaction) => {
   editingTransaction.value = { ...transaction }
+  showAddTransaction.value = false; // Ensure add modal is not open
+  setTimeout(() => editingTransaction.value = { ...transaction }, 0); // Re-assign to trigger modal
 }
 
 const closeModal = () => {
-  showAddTransaction.value = false
   editingTransaction.value = null
 }
 
 const handleSaveTransaction = (transactionData: Omit<Transaction, 'id' | 'createdAt'>) => {
   if (editingTransaction.value) {
     databaseStore.updateTransaction(editingTransaction.value.id, transactionData)
-  } else {
-    databaseStore.addTransaction(transactionData)
   }
   closeModal()
 }

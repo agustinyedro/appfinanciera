@@ -1,14 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-
-function withOpacity(variableName) {
-  return ({ opacityValue }) => {
-    if (opacityValue !== undefined) {
-      return `rgba(var(${variableName}), ${opacityValue})`
-    }
-    return `rgb(var(${variableName}))`
-  }
-}
-
 export default {
     content: [
       "./index.html",
@@ -17,31 +7,31 @@ export default {
     theme: {
       extend: {
         colors: {
-          primary: withOpacity('--color-primary'),
-          'primary-focus': withOpacity('--color-primary-focus'),
-          'primary-content': withOpacity('--color-primary-content'),
+          primary: 'rgb(var(--color-primary) / <alpha-value>)',
+          'primary-focus': 'rgb(var(--color-primary-focus) / <alpha-value>)',
+          'primary-content': 'rgb(var(--color-primary-content) / <alpha-value>)',
           
-          secondary: withOpacity('--color-secondary'),
-          'secondary-focus': withOpacity('--color-secondary-focus'),
-          'secondary-content': withOpacity('--color-secondary-content'),
+          secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
+          'secondary-focus': 'rgb(var(--color-secondary-focus) / <alpha-value>)',
+          'secondary-content': 'rgb(var(--color-secondary-content) / <alpha-value>)',
 
-          accent: withOpacity('--color-accent'),
-          'accent-focus': withOpacity('--color-accent-focus'),
-          'accent-content': withOpacity('--color-accent-content'),
+          accent: 'rgb(var(--color-accent) / <alpha-value>)',
+          'accent-focus': 'rgb(var(--color-accent-focus) / <alpha-value>)',
+          'accent-content': 'rgb(var(--color-accent-content) / <alpha-value>)',
 
-          neutral: withOpacity('--color-neutral'),
-          'neutral-focus': withOpacity('--color-neutral-focus'),
-          'neutral-content': withOpacity('--color-neutral-content'),
+          neutral: 'rgb(var(--color-neutral) / <alpha-value>)',
+          'neutral-focus': 'rgb(var(--color-neutral-focus) / <alpha-value>)',
+          'neutral-content': 'rgb(var(--color-neutral-content) / <alpha-value>)',
           
-          'base-100': withOpacity('--color-base-100'),
-          'base-200': withOpacity('--color-base-200'),
-          'base-300': withOpacity('--color-base-300'),
-          'base-content': withOpacity('--color-base-content'),
+          'base-100': 'rgb(var(--color-base-100) / <alpha-value>)',
+          'base-200': 'rgb(var(--color-base-200) / <alpha-value>)',
+          'base-300': 'rgb(var(--color-base-300) / <alpha-value>)',
+          'base-content': 'rgb(var(--color-base-content) / <alpha-value>)',
 
-          info: withOpacity('--color-info'),
-          success: withOpacity('--color-success'),
-          warning: withOpacity('--color-warning'),
-          error: withOpacity('--color-error'),
+          info: 'rgb(var(--color-info) / <alpha-value>)',
+          success: 'rgb(var(--color-success) / <alpha-value>)',
+          warning: 'rgb(var(--color-warning) / <alpha-value>)',
+          error: 'rgb(var(--color-error) / <alpha-value>)',
         }
       },
     },

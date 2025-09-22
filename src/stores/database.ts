@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { db } from '@/services/sqlite'
 import type { Account, SavingsJar, Tag, Transaction } from '@/types'
 
+type ChartDataItem = { value: number, name: string, itemStyle: { color: string } };
+
 export const useDatabaseStore = defineStore('database', {
   state: () => ({
     isInitialized: false,
@@ -40,127 +42,132 @@ export const useDatabaseStore = defineStore('database', {
     activeAccounts(state): Account[] {
       return state.accounts.filter(a => a.isActive)
     },
-    monthlyExpensesByCategory(state): { value: number, name: string, itemStyle: { color: string } }[] {
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      const expenses = state.transactions.filter(t => {
-        const date = new Date(t.date);
-        return t.type === 'gasto' && date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-      });
-
-      const expensesByTag = expenses.reduce((acc, t) => {
-        const tag = state.tags.find(tag => tag.id === t.tagId);
-        if (tag) {
-          if (!acc[tag.id]) {
-            acc[tag.id] = { name: tag.name, value: 0, color: tag.color };
-          }
-          acc[tag.id].value += t.amount;
-        }
-        return acc;
-      }, {} as Record<string, { name: string, value: number, color: string }>);
-
-      return Object.values(expensesByTag).map(item => ({
-        value: item.value,
-        name: item.name,
-        itemStyle: {
-          color: item.color
-        }
-      }));
-    },
-    historicalIncomeExpense(state): { labels: string[], income: number[], expenses: number[] } {
-      const labels: string[] = [];
-      const income: number[] = [];
-      const expenses: number[] = [];
-      const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date();
-        d.setMonth(d.getMonth() - i);
-        const month = d.getMonth();
-        const year = d.getFullYear();
-        
-        labels.push(`${monthNames[month]} ${year.toString().slice(-2)}`);
-
-        const monthlyTransactions = state.transactions.filter(t => {
+    
+    // Chart Getters
+    getCategorizedDataForPeriod(state): (type: 'ingreso' | 'gasto', year: number, month: number) => ChartDataItem[] {
+      return (type: 'ingreso' | 'gasto', year: number, month: number) => {
+        const filteredTransactions = state.transactions.filter(t => {
           const date = new Date(t.date);
-          return date.getMonth() === month && date.getFullYear() === year;
+          return t.type === type && date.getFullYear() === year && date.getMonth() === month;
         });
 
-        income.push(monthlyTransactions.filter(t => t.type === 'ingreso').reduce((sum, t) => sum + t.amount, 0));
-        expenses.push(monthlyTransactions.filter(t => t.type === 'gasto').reduce((sum, t) => sum + t.amount, 0));
-      }
+        const dataByTag = filteredTransactions.reduce((acc, t) => {
+          const tag = state.tags.find(tag => tag.id === t.tagId);
+          if (tag) {
+            if (!acc[tag.id]) {
+              acc[tag.id] = { name: tag.name, value: 0, color: tag.color };
+            }
+            acc[tag.id].value += t.amount;
+          }
+          return acc;
+        }, {} as Record<string, { name: string, value: number, color: string }>);
 
-      return { labels, income, expenses };
+        return Object.values(dataByTag).map(item => ({
+          value: parseFloat(item.value.toFixed(2)),
+          name: item.name,
+          itemStyle: {
+            color: item.color
+          }
+        }));
+      }
+    },
+    getHistoricalIncomeExpense(state): (months: number) => { labels: string[], income: number[], expenses: number[] } {
+      return (months: number) => {
+        const labels: string[] = [];
+        const income: number[] = [];
+        const expenses: number[] = [];
+        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+        for (let i = months - 1; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(1);
+          d.setMonth(d.getMonth() - i);
+          const month = d.getMonth();
+          const year = d.getFullYear();
+          
+          labels.push(`${monthNames[month]} '${year.toString().slice(-2)}`);
+
+          const monthlyTransactions = state.transactions.filter(t => {
+            const date = new Date(t.date);
+            return date.getMonth() === month && date.getFullYear() === year;
+          });
+
+          income.push(parseFloat(monthlyTransactions.filter(t => t.type === 'ingreso').reduce((sum, t) => sum + t.amount, 0).toFixed(2)));
+          expenses.push(parseFloat(monthlyTransactions.filter(t => t.type === 'gasto').reduce((sum, t) => sum + t.amount, 0).toFixed(2)));
+        }
+
+        return { labels, income, expenses };
+      }
     }
   },
   actions: {
     async init() {
       if (this.isInitialized) return
       await db.init()
-      await this.fetchAll()
+      this.fetchAll()
       this.isInitialized = true
     },
-    async fetchAll() {
-      this.accounts = await db.getAllAccounts()
-      this.savingsJars = await db.getAllSavingsJars()
-      this.tags = await db.getAllTags()
-      this.transactions = await db.getAllTransactions()
+    fetchAll() {
+      this.accounts = db.getAllAccounts()
+      this.savingsJars = db.getAllSavingsJars()
+      this.tags = db.getAllTags()
+      this.transactions = db.getAllTransactions()
     },
     
     // Account actions
-    async addAccount(account: Omit<Account, 'id' | 'createdAt'>) {
-      await db.addAccount(account)
-      await this.fetchAll()
+    addAccount(account: Omit<Account, 'id' | 'createdAt'>) {
+      db.addAccount(account)
+      this.fetchAll()
     },
-    async updateAccount(id: string, updates: Partial<Account>) {
-      await db.updateAccount(id, updates)
-      await this.fetchAll()
+    updateAccount(id: string, updates: Partial<Account>) {
+      db.updateAccount(id, updates)
+      this.fetchAll()
     },
-    async deleteAccount(id: string) {
-      await db.deleteAccount(id)
-      await this.fetchAll()
+    deleteAccount(id: string) {
+      db.deleteAccount(id)
+      this.fetchAll()
     },
 
     // SavingsJar actions
-    async addSavingsJar(jar: Omit<SavingsJar, 'id' | 'createdAt'>) {
-      await db.addSavingsJar(jar)
-      await this.fetchAll()
+    addSavingsJar(jar: Omit<SavingsJar, 'id' | 'createdAt'>) {
+      db.addSavingsJar(jar)
+      this.fetchAll()
     },
-    async updateSavingsJar(id: string, updates: Partial<SavingsJar>) {
-      await db.updateSavingsJar(id, updates)
-      await this.fetchAll()
+    updateSavingsJar(id: string, updates: Partial<SavingsJar>) {
+      db.updateSavingsJar(id, updates)
+      this.fetchAll()
     },
-    async deleteSavingsJar(id: string) {
-      await db.deleteSavingsJar(id)
-      await this.fetchAll()
+    deleteSavingsJar(id: string) {
+      db.deleteSavingsJar(id)
+      this.fetchAll()
     },
 
     // Tag actions
-    async addTag(tag: Omit<Tag, 'id' | 'createdAt'>) {
-      await db.addTag(tag)
-      await this.fetchAll()
+    addTag(tag: Omit<Tag, 'id' | 'createdAt'>) {
+      db.addTag(tag)
+      this.fetchAll()
     },
-    async updateTag(id: string, updates: Partial<Tag>) {
-      await db.updateTag(id, updates)
-      await this.fetchAll()
+    updateTag(id: string, updates: Partial<Tag>) {
+      db.updateTag(id, updates)
+      this.fetchAll()
     },
-    async deleteTag(id: string) {
-      await db.deleteTag(id)
-      await this.fetchAll()
+    deleteTag(id: string) {
+      db.deleteTag(id)
+      this.fetchAll()
     },
 
     // Transaction actions
-    async addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt'>) {
-      await db.addTransaction(transaction)
-      await this.fetchAll()
+    addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt'>) {
+      db.addTransaction(transaction)
+      this.fetchAll()
     },
-    async updateTransaction(id: string, updates: Partial<Transaction>) {
-      await db.updateTransaction(id, updates)
-      await this.fetchAll()
+    updateTransaction(id: string, updates: Partial<Transaction>) {
+      db.updateTransaction(id, updates)
+      this.fetchAll()
     },
-    async deleteTransaction(id: string) {
-      await db.deleteTransaction(id)
-      await this.fetchAll()
+    deleteTransaction(id: string) {
+      db.deleteTransaction(id)
+      this.fetchAll()
     },
   }
 })

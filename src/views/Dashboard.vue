@@ -1,15 +1,16 @@
 <template>
   <div class="space-y-6">
-    <!-- Balance Card -->
+    <!-- Welcome Header -->
     <div class="bg-base-100 p-6 rounded-2xl shadow-md border border-base-300/50">
       <div class="flex justify-between items-start">
         <div>
-          <p class="text-sm font-medium text-base-content/70">Balance Total</p>
-          <p class="text-4xl font-bold text-base-content mt-1">${{ totalBalance.toFixed(2) }}</p>
+          <h1 class="text-2xl font-bold text-base-content">Hola, {{ user.name }}</h1>
+          <p class="text-base-content/70">Estos son tus números de hoy.</p>
         </div>
-        <router-link to="/cuentas" class="text-sm font-semibold text-primary hover:text-primary-focus">
-          Ver detalles
-        </router-link>
+      </div>
+      <div class="mt-4">
+        <p class="text-sm font-medium text-base-content/70">Balance Total</p>
+        <p class="text-4xl font-bold text-base-content mt-1">${{ totalBalance.toFixed(2) }}</p>
       </div>
     </div>
 
@@ -42,8 +43,11 @@
     
     <!-- Recent Transactions -->
     <div class="bg-base-100 rounded-2xl shadow-md border border-base-300/50">
-      <div class="p-6 border-b border-base-300">
+      <div class="p-6 border-b border-base-300 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-base-content">Transacciones Recientes</h2>
+        <router-link to="/transacciones" class="text-sm font-semibold text-primary hover:text-primary-focus">
+          Ver todas
+        </router-link>
       </div>
       <div class="p-4 sm:p-6">
         <div v-if="recentTransactions.length === 0" class="text-center py-8 text-base-content/60">
@@ -84,13 +88,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Add Transaction Modal -->
-    <TransactionModal 
-      v-if="showAddTransaction"
-      @close="showAddTransaction = false"
-      @save="handleAddTransaction"
-    />
   </div>
 </template>
 
@@ -99,13 +96,11 @@ import { computed } from 'vue'
 import { useDatabaseStore } from '@/stores/database'
 import { storeToRefs } from 'pinia'
 import { useIcons } from '@/composables/useIcons'
+import { useUser } from '@/composables/useUser'
 import { 
   TrendingUp, 
   TrendingDown 
 } from 'lucide-vue-next'
-import TransactionModal from '../components/TransactionModal.vue'
-import type { Transaction } from '../types'
-import { showAddTransaction } from '@/composables/useModal'
 
 const databaseStore = useDatabaseStore()
 const { 
@@ -116,6 +111,7 @@ const {
   tags
 } = storeToRefs(databaseStore)
 
+const { user } = useUser()
 const { getIcon } = useIcons()
 
 const recentTransactions = computed(() => {
@@ -141,10 +137,5 @@ const formatDate = (date: string) => {
     day: 'numeric',
     month: 'short'
   })
-}
-
-const handleAddTransaction = async (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
-  await databaseStore.addTransaction(transaction)
-  showAddTransaction.value = false
 }
 </script>

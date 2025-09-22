@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-base-content">Jarros de Ahorro</h1>
+      <h2 class="text-xl font-bold text-base-content">Mis Jarros de Ahorro</h2>
       <button 
         @click="showAddJar = true"
         class="bg-primary text-primary-content px-4 py-2 rounded-lg hover:bg-primary-focus transition-colors flex items-center"

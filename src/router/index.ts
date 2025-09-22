@@ -1,18 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Dashboard from '../views/Dashboard.vue';
-import Accounts from '../views/Accounts.vue';
-import SavingsJars from '../views/SavingsJars.vue';
+import Management from '../views/Management.vue';
 import Transactions from '../views/Transactions.vue';
-import Tags from '../views/Tags.vue';
 import Settings from '../views/Settings.vue';
+import Reportes from '../views/Reportes.vue';
 
 const routes = [
   { path: '/', name: 'Dashboard', component: Dashboard },
-  { path: '/cuentas', name: 'Accounts', component: Accounts },
-  { path: '/ahorros', name: 'SavingsJars', component: SavingsJars },
-  { path: '/transacciones', name: 'Transactions', component: Transactions },
-  { path: '/categorias', name: 'Tags', component: Tags },
-  { path: '/ajustes', name: 'Settings', component: Settings },
+  { path: '/gestion', name: 'Gestión', component: Management },
+  { path: '/transacciones', name: 'Transacciones', component: Transactions },
+  { path: '/reportes', name: 'Reportes', component: Reportes },
+  { path: '/ajustes', name: 'Ajustes', component: Settings },
 ];
 
 const router = createRouter({

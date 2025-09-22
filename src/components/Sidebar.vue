@@ -13,7 +13,7 @@
         :key="item.name"
         :to="item.path"
         class="flex items-center px-3 py-2 mt-2 text-base font-medium rounded-lg transition-colors"
-        :class="$route.path === item.path 
+        :class="$route.path.startsWith(item.path) && (item.path !== '/' || $route.path === '/')
           ? 'bg-primary/10 text-primary' 
           : 'text-base-content/80 hover:bg-base-200 hover:text-base-content'"
       >
@@ -32,19 +32,17 @@
 import { 
   LayoutDashboard, 
   Wallet, 
-  PiggyBank, 
-  ArrowLeftRight, 
-  Tags as TagsIcon, 
-  Settings
+  Settings,
+  BarChart3,
+  ArrowLeftRight
 } from 'lucide-vue-next'
 import ThemeSelector from './ThemeSelector.vue'
 
 const navigation = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Cuentas', path: '/cuentas', icon: Wallet },
-  { name: 'Jarros de Ahorro', path: '/ahorros', icon: PiggyBank },
+  { name: 'Gestión', path: '/gestion', icon: Wallet },
   { name: 'Transacciones', path: '/transacciones', icon: ArrowLeftRight },
-  { name: 'Categorías', path: '/categorias', icon: TagsIcon },
+  { name: 'Reportes', path: '/reportes', icon: BarChart3 },
   { name: 'Ajustes', path: '/ajustes', icon: Settings }
 ]
 </script>

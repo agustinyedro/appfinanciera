@@ -1,24 +1,28 @@
 <template>
-  <div class="bg-base-100 p-6 rounded-lg shadow-sm border border-base-300">
-    <h2 class="text-lg font-semibold text-base-content mb-4">Gastos por Categoría (Mes Actual)</h2>
-    <div v-if="hasData" class="h-80">
+  <div class="h-80">
+    <div v-if="hasData">
       <v-chart class="chart" :option="chartOption" autoresize />
     </div>
-    <div v-else class="h-80 flex items-center justify-center text-base-content/60">
-      No hay datos de gastos para este mes.
+    <div v-else class="h-full flex items-center justify-center text-base-content/60">
+      No hay datos de {{ type === 'gasto' ? 'gastos' : 'ingresos' }} para el período seleccionado.
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { PieChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { useDatabaseStore } from '@/stores/database';
-import { storeToRefs } from 'pinia';
+
+const props = defineProps<{
+  type: 'ingreso' | 'gasto',
+  year: number,
+  month: number
+}>()
 
 use([
   CanvasRenderer,
@@ -29,9 +33,12 @@ use([
 ]);
 
 const databaseStore = useDatabaseStore();
-const { monthlyExpensesByCategory } = storeToRefs(databaseStore);
 
-const hasData = computed(() => monthlyExpensesByCategory.value.length > 0);
+const chartData = computed(() => {
+  return databaseStore.getCategorizedDataForPeriod(props.type, props.year, props.month);
+});
+
+const hasData = computed(() => chartData.value.length > 0);
 
 const chartOption = computed(() => ({
   tooltip: {
@@ -41,15 +48,17 @@ const chartOption = computed(() => ({
   legend: {
     orient: 'vertical',
     left: 'left',
+    top: 'center',
     textStyle: {
       color: 'rgb(var(--color-base-content))'
     }
   },
   series: [
     {
-      name: 'Gastos',
+      name: props.type === 'gasto' ? 'Gastos' : 'Ingresos',
       type: 'pie',
       radius: ['50%', '70%'],
+      center: ['70%', '50%'],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -70,7 +79,7 @@ const chartOption = computed(() => ({
       labelLine: {
         show: false,
       },
-      data: monthlyExpensesByCategory.value,
+      data: chartData.value,
     },
   ],
 }));

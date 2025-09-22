@@ -18,7 +18,12 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 
-const { currentTheme, setTheme, availableThemes } = useTheme()
+const { currentTheme, setTheme, availableThemes, initTheme } = useTheme()
+
+onMounted(() => {
+  initTheme()
+})
 </script>

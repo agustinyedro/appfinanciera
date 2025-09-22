@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+      <div class="fixed inset-0 bg-base-content/30 backdrop-blur-sm transition-opacity" @click="$emit('close')"></div>
       
       <div class="inline-block align-bottom bg-base-100 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
         <form @submit.prevent="handleSubmit">
@@ -65,17 +65,47 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-base-content/70 mb-1">Categoría</label>
-                <select 
-                  v-model="form.tagId"
-                  required
-                  class="w-full border border-base-300 rounded-md px-3 py-2 bg-base-100 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Seleccionar categoría</option>
-                  <option v-for="tag in availableTags" :key="tag.id" :value="tag.id">
-                    {{ tag.name }}
-                  </option>
-                </select>
+                <Listbox v-model="form.tagId">
+                  <div class="relative">
+                    <label class="block text-sm font-medium text-base-content/70 mb-1">Categoría</label>
+                    <ListboxButton class="relative w-full cursor-default rounded-lg bg-base-100 py-2 pl-3 pr-10 text-left border border-base-300 focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm h-10">
+                      <span v-if="selectedTag" class="flex items-center">
+                        <div 
+                          class="w-6 h-6 rounded-md mr-2 flex items-center justify-center flex-shrink-0"
+                          :style="{ backgroundColor: `${selectedTag.color}20` }"
+                        >
+                          <component :is="getIcon(selectedTag.icon || 'Tags')" class="h-4 w-4" :style="{ color: selectedTag.color }" />
+                        </div>
+                        <span class="block truncate">{{ selectedTag.name }}</span>
+                      </span>
+                      <span v-else class="block truncate text-base-content/60">Seleccionar categoría</span>
+                      <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <ChevronsUpDown class="h-5 w-5 text-gray-400" aria-hidden="true" />
+                      </span>
+                    </ListboxButton>
+
+                    <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                      <ListboxOptions class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-100 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm z-10">
+                        <ListboxOption v-slot="{ active, selected }" v-for="tag in availableTags" :key="tag.id" :value="tag.id" as="template">
+                          <li :class="[active ? 'bg-primary/10 text-primary' : 'text-base-content', 'relative cursor-default select-none py-2 pl-10 pr-4']">
+                            <div class="flex items-center">
+                              <div 
+                                class="w-6 h-6 rounded-md mr-2 flex items-center justify-center flex-shrink-0"
+                                :style="{ backgroundColor: `${tag.color}20` }"
+                              >
+                                <component :is="getIcon(tag.icon || 'Tags')" class="h-4 w-4" :style="{ color: tag.color }" />
+                              </div>
+                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ tag.name }}</span>
+                            </div>
+                            <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                              <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          </li>
+                        </ListboxOption>
+                      </ListboxOptions>
+                    </transition>
+                  </div>
+                </Listbox>
               </div>
               
               <div>
@@ -194,7 +224,15 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useDatabaseStore } from '@/stores/database'
 import { storeToRefs } from 'pinia'
-import type { Transaction } from '../types'
+import { useIcons } from '@/composables/useIcons'
+import type { Transaction, Tag } from '../types'
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOptions,
+  ListboxOption,
+} from '@headlessui/vue'
+import { CheckIcon, ChevronsUpDown } from 'lucide-vue-next'
 
 interface Props {
   transaction?: Transaction | null
@@ -208,6 +246,7 @@ const emit = defineEmits<{
 
 const databaseStore = useDatabaseStore()
 const { tags, activeAccounts } = storeToRefs(databaseStore)
+const { getIcon } = useIcons()
 
 const form = ref({
   type: 'gasto' as const,
@@ -234,6 +273,10 @@ const showCreditCard = ref(false)
 
 const availableTags = computed(() => {
   return tags.value.filter(t => t.category === form.value.type)
+})
+
+const selectedTag = computed(() => {
+  return tags.value.find(t => t.id === form.value.tagId)
 })
 
 const monthlyAmount = computed(() => {
@@ -290,6 +333,11 @@ const handleSubmit = () => {
     tagId: form.value.tagId,
     date: form.value.date,
     isRecurring: form.value.isRecurring
+  }
+
+  if (!transactionData.tagId) {
+    alert('Por favor, selecciona una categoría.')
+    return
   }
 
   if (form.value.isRecurring) {

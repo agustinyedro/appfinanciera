@@ -20,13 +20,13 @@ class SQLiteService {
         console.log('OPFS is not available, created an in-memory database.');
       }
       
-      await this.createTables();
+      this.createTables();
     } catch (err: any) {
       console.error('Error initializing SQLite:', err.message);
     }
   }
 
-  private async createTables() {
+  private createTables() {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS accounts (
         id TEXT PRIMARY KEY,
@@ -98,110 +98,122 @@ class SQLiteService {
   }
   
   // Generic CRUD
-  private async getAll<T>(table: string): Promise<T[]> {
+  private getAll<T>(table: string): T[] {
     const rows = this.db.selectObjects(`SELECT * FROM ${table}`);
     return rows.map(this.parseRow);
   }
 
-  private async add(table: string, data: any) {
-    const id = Date.now().toString();
+  private add(table: string, data: any) {
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
     const createdAt = new Date().toISOString();
     
     const columns = ['id', 'createdAt'];
-    const values = [id, createdAt];
+    const values: any[] = [id, createdAt];
     const placeholders = ['?', '?'];
 
     for (const key in data) {
-      columns.push(key);
-      let value = data[key];
-      if (typeof value === 'boolean') value = value ? 1 : 0;
-      if (typeof value === 'object') value = JSON.stringify(value);
-      values.push(value);
-      placeholders.push('?');
+      if (data.hasOwnProperty(key) && data[key] !== undefined) {
+        columns.push(key);
+        let value = data[key];
+        if (typeof value === 'boolean') {
+          value = value ? 1 : 0;
+        } else if (typeof value === 'object' && value !== null) {
+          value = JSON.stringify(value);
+        }
+        values.push(value);
+        placeholders.push('?');
+      }
     }
 
     const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders.join(', ')})`;
-    this.db.exec(sql, values);
+    this.db.exec(sql, { bind: values });
   }
 
-  private async update(table: string, id: string, updates: any) {
+  private update(table: string, id: string, updates: any) {
     const setClauses: string[] = [];
     const values: any[] = [];
     for (const key in updates) {
-      setClauses.push(`${key} = ?`);
-      let value = updates[key];
-      if (typeof value === 'boolean') value = value ? 1 : 0;
-      if (typeof value === 'object') value = JSON.stringify(value);
-      values.push(value);
+       if (updates.hasOwnProperty(key) && updates[key] !== undefined) {
+        setClauses.push(`${key} = ?`);
+        let value = updates[key];
+        if (typeof value === 'boolean') {
+          value = value ? 1 : 0;
+        } else if (typeof value === 'object' && value !== null) {
+          value = JSON.stringify(value);
+        }
+        values.push(value);
+      }
     }
+    if (setClauses.length === 0) return;
+    
     values.push(id);
     const sql = `UPDATE ${table} SET ${setClauses.join(', ')} WHERE id = ?`;
-    this.db.exec(sql, values);
+    this.db.exec(sql, { bind: values });
   }
 
-  private async delete(table: string, id: string) {
+  private delete(table: string, id: string) {
     this.db.exec(`DELETE FROM ${table} WHERE id = ?`, [id]);
   }
   
   // Specific methods
-  getAllAccounts = (): Promise<Account[]> => this.getAll('accounts');
+  getAllAccounts = (): Account[] => this.getAll('accounts');
   addAccount = (data: Omit<Account, 'id'|'createdAt'>) => this.add('accounts', data);
   updateAccount = (id: string, updates: Partial<Account>) => this.update('accounts', id, updates);
   deleteAccount = (id: string) => this.delete('accounts', id);
 
-  getAllSavingsJars = (): Promise<SavingsJar[]> => this.getAll('savings_jars');
+  getAllSavingsJars = (): SavingsJar[] => this.getAll('savings_jars');
   addSavingsJar = (data: Omit<SavingsJar, 'id'|'createdAt'>) => this.add('savings_jars', data);
   updateSavingsJar = (id: string, updates: Partial<SavingsJar>) => this.update('savings_jars', id, updates);
   deleteSavingsJar = (id: string) => this.delete('savings_jars', id);
 
-  getAllTags = (): Promise<Tag[]> => this.getAll('tags');
+  getAllTags = (): Tag[] => this.getAll('tags');
   addTag = (data: Omit<Tag, 'id'|'createdAt'>) => this.add('tags', data);
   updateTag = (id: string, updates: Partial<Tag>) => this.update('tags', id, updates);
   deleteTag = (id: string) => this.delete('tags', id);
 
-  getAllTransactions = (): Promise<Transaction[]> => this.getAll('transactions');
-  async addTransaction(data: Omit<Transaction, 'id'|'createdAt'>) {
-    await this.add('transactions', data);
-    const account = await this.getOne<Account>('accounts', data.accountId);
+  getAllTransactions = (): Transaction[] => this.getAll('transactions');
+  addTransaction(data: Omit<Transaction, 'id'|'createdAt'>) {
+    this.add('transactions', data);
+    const account = this.getOne<Account>('accounts', data.accountId);
     if(account) {
       const newBalance = account.balance + (data.type === 'ingreso' ? data.amount : -data.amount);
-      await this.update('accounts', data.accountId, { balance: newBalance });
+      this.update('accounts', data.accountId, { balance: newBalance });
     }
   }
-  async updateTransaction(id: string, updates: Partial<Transaction>) {
-    const oldTx = await this.getOne<Transaction>('transactions', id);
+  updateTransaction(id: string, updates: Partial<Transaction>) {
+    const oldTx = this.getOne<Transaction>('transactions', id);
     if (!oldTx) return;
 
     // Revert old transaction
-    const oldAccount = await this.getOne<Account>('accounts', oldTx.accountId);
+    const oldAccount = this.getOne<Account>('accounts', oldTx.accountId);
     if (oldAccount) {
       const revertedBalance = oldAccount.balance - (oldTx.type === 'ingreso' ? oldTx.amount : -oldTx.amount);
-      await this.update('accounts', oldTx.accountId, { balance: revertedBalance });
+      this.update('accounts', oldTx.accountId, { balance: revertedBalance });
     }
 
     const newTx = { ...oldTx, ...updates };
-    await this.update('transactions', id, updates);
+    this.update('transactions', id, updates);
 
     // Apply new transaction
-    const newAccount = await this.getOne<Account>('accounts', newTx.accountId);
+    const newAccount = this.getOne<Account>('accounts', newTx.accountId);
     if (newAccount) {
       const newBalance = newAccount.balance + (newTx.type === 'ingreso' ? newTx.amount : -newTx.amount);
-      await this.update('accounts', newTx.accountId, { balance: newBalance });
+      this.update('accounts', newTx.accountId, { balance: newBalance });
     }
   }
-  async deleteTransaction(id: string) {
-    const tx = await this.getOne<Transaction>('transactions', id);
+  deleteTransaction(id: string) {
+    const tx = this.getOne<Transaction>('transactions', id);
     if (tx) {
-        const account = await this.getOne<Account>('accounts', tx.accountId);
+        const account = this.getOne<Account>('accounts', tx.accountId);
         if (account) {
             const newBalance = account.balance - (tx.type === 'ingreso' ? tx.amount : -tx.amount);
-            await this.update('accounts', tx.accountId, { balance: newBalance });
+            this.update('accounts', tx.accountId, { balance: newBalance });
         }
     }
-    await this.delete('transactions', id);
+    this.delete('transactions', id);
   }
 
-  private async getOne<T>(table: string, id: string): Promise<T | null> {
+  private getOne<T>(table: string, id: string): T | null {
     const row = this.db.selectObject(`SELECT * FROM ${table} WHERE id = ?`, [id]);
     return row ? this.parseRow(row) : null;
   }
