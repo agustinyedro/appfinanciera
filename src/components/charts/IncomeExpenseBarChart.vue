@@ -12,7 +12,7 @@ import { BarChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { useDatabaseStore } from '@/stores/database';
-import { useTheme } from '@/composables/useTheme';
+import { useChartTheme } from '@/composables/useChartTheme';
 
 const props = defineProps<{
   rangeInMonths: number
@@ -28,16 +28,34 @@ use([
 ]);
 
 const databaseStore = useDatabaseStore();
-const { currentTheme } = useTheme();
+const { textColor, successColor, errorColor } = useChartTheme();
 
 const historicalData = computed(() => {
-  return databaseStore.getHistoricalIncomeExpense(props.rangeInMonths);
+  const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  const labels: string[] = [];
+  const income: number[] = [];
+  const expenses: number[] = [];
+  const getMonthlyBalance = databaseStore.getMonthlyBalance;
+
+  for (let i = props.rangeInMonths - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - i);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+
+    labels.push(`${monthNames[month]} '${year.toString().slice(-2)}`);
+
+    const { income: monthlyIncome, expense: monthlyExpenses } = getMonthlyBalance(year, month);
+
+    income.push(parseFloat(monthlyIncome.toFixed(2)));
+    expenses.push(parseFloat(monthlyExpenses.toFixed(2)));
+  }
+
+  return { labels, income, expenses };
 });
 
 const chartOption = computed(() => {
-  // This makes the computed property reactive to theme changes
-  const theme = currentTheme.value;
-
   return {
     tooltip: {
       trigger: 'axis',
@@ -48,7 +66,7 @@ const chartOption = computed(() => {
     legend: {
       data: ['Ingresos', 'Gastos'],
       textStyle: {
-        color: 'rgb(var(--color-base-content))',
+        color: textColor.value,
         fontSize: 14
       }
     },
@@ -64,7 +82,7 @@ const chartOption = computed(() => {
         data: historicalData.value.labels,
         axisLine: {
           lineStyle: {
-            color: 'rgb(var(--color-base-content))'
+            color: textColor.value
           }
         }
       }
@@ -74,12 +92,12 @@ const chartOption = computed(() => {
         type: 'value',
         axisLine: {
           lineStyle: {
-            color: 'rgb(var(--color-base-content))'
+            color: textColor.value
           }
         },
         splitLine: {
           lineStyle: {
-            color: 'rgba(var(--color-base-content), 0.2)'
+            color: 'rgba(128, 128, 128, 0.2)'
           }
         }
       }
@@ -91,7 +109,7 @@ const chartOption = computed(() => {
         barWidth: '20%',
         data: historicalData.value.income,
         itemStyle: {
-          color: 'rgb(var(--color-success))'
+          color: successColor.value
         }
       },
       {
@@ -100,7 +118,7 @@ const chartOption = computed(() => {
         barWidth: '20%',
         data: historicalData.value.expenses,
         itemStyle: {
-          color: 'rgb(var(--color-error))'
+          color: errorColor.value
         }
       }
     ]

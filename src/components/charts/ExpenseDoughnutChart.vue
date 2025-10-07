@@ -17,7 +17,7 @@ import { PieChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { useDatabaseStore } from '@/stores/database';
-import { useTheme } from '@/composables/useTheme';
+import { useChartTheme } from '@/composables/useChartTheme';
 
 const props = defineProps<{
   type: 'ingreso' | 'gasto',
@@ -34,7 +34,7 @@ use([
 ]);
 
 const databaseStore = useDatabaseStore();
-const { currentTheme } = useTheme();
+const { textColor, borderColor } = useChartTheme();
 
 const chartData = computed(() => {
   return databaseStore.getCategorizedDataForPeriod(props.type, props.year, props.month);
@@ -43,9 +43,6 @@ const chartData = computed(() => {
 const hasData = computed(() => chartData.value.length > 0);
 
 const chartOption = computed(() => {
-  // eslint-disable-next-line
-  const theme = currentTheme.value; // Ensures reactivity to theme changes
-
   return {
     tooltip: {
       trigger: 'item',
@@ -56,7 +53,7 @@ const chartOption = computed(() => {
       left: 'left',
       top: 'center',
       textStyle: {
-        color: 'rgb(var(--color-base-content))'
+        color: textColor.value
       }
     },
     series: [
@@ -68,7 +65,7 @@ const chartOption = computed(() => {
         avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 10,
-          borderColor: 'rgb(var(--color-base-100))',
+          borderColor: borderColor.value,
           borderWidth: 2,
         },
         label: {

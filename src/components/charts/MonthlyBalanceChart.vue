@@ -12,7 +12,7 @@ import { BarChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { useDatabaseStore } from '@/stores/database';
-import { useTheme } from '@/composables/useTheme';
+import { useChartTheme } from '@/composables/useChartTheme';
 
 const props = defineProps<{
   year: number,
@@ -29,15 +29,13 @@ use([
 ]);
 
 const databaseStore = useDatabaseStore();
-const { currentTheme } = useTheme();
+const { textColor, successColor, errorColor } = useChartTheme();
 
 const chartData = computed(() => {
   return databaseStore.getMonthlyBalance(props.year, props.month);
 });
 
 const chartOption = computed(() => {
-  // eslint-disable-next-line
-  const theme = currentTheme.value; // Ensures reactivity to theme changes
   const balance = chartData.value.income - chartData.value.expense;
 
   return {
@@ -46,7 +44,7 @@ const chartOption = computed(() => {
       left: 'center',
       top: 0,
       textStyle: {
-        color: balance >= 0 ? 'rgb(var(--color-success))' : 'rgb(var(--color-error))',
+        color: balance >= 0 ? successColor.value : errorColor.value,
         fontSize: 16,
         fontWeight: 'bold'
       }
@@ -60,7 +58,7 @@ const chartOption = computed(() => {
     legend: {
       data: ['Ingresos', 'Gastos'],
       textStyle: {
-        color: 'rgb(var(--color-base-content))'
+        color: textColor.value
       },
       top: 30
     },
@@ -76,7 +74,7 @@ const chartOption = computed(() => {
       data: ['Resumen Mensual'],
       axisLine: {
         lineStyle: {
-          color: 'rgb(var(--color-base-content))'
+          color: textColor.value
         }
       }
     },
@@ -84,12 +82,12 @@ const chartOption = computed(() => {
       type: 'value',
       axisLine: {
         lineStyle: {
-          color: 'rgb(var(--color-base-content))'
+          color: textColor.value
         }
       },
       splitLine: {
         lineStyle: {
-          color: 'rgba(var(--color-base-content), 0.2)'
+          color: 'rgba(128, 128, 128, 0.2)'
         }
       }
     },
@@ -104,7 +102,7 @@ const chartOption = computed(() => {
           formatter: '${c}'
         },
         itemStyle: {
-          color: 'rgb(var(--color-success))'
+          color: successColor.value
         },
         data: [chartData.value.income]
       },
@@ -118,7 +116,7 @@ const chartOption = computed(() => {
           formatter: '${c}'
         },
         itemStyle: {
-          color: 'rgb(var(--color-error))'
+          color: errorColor.value
         },
         data: [chartData.value.expense]
       }

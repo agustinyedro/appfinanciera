@@ -17,7 +17,7 @@ import { LineChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { useDatabaseStore } from '@/stores/database';
-import { useTheme } from '@/composables/useTheme';
+import { useChartTheme } from '@/composables/useChartTheme';
 
 const props = defineProps<{
   type: 'ingreso' | 'gasto',
@@ -34,7 +34,7 @@ use([
 ]);
 
 const databaseStore = useDatabaseStore();
-const { currentTheme } = useTheme();
+const { textColor } = useChartTheme();
 
 const chartData = computed(() => {
   return databaseStore.getCategoryRanking(props.type, props.rangeInMonths);
@@ -43,9 +43,6 @@ const chartData = computed(() => {
 const hasData = computed(() => chartData.value.series.length > 0 && chartData.value.series.some(s => s.data.some(d => d > 0)));
 
 const chartOption = computed(() => {
-  // eslint-disable-next-line
-  const theme = currentTheme.value; // Ensures reactivity to theme changes
-
   return {
     tooltip: {
       trigger: 'axis'
@@ -53,7 +50,7 @@ const chartOption = computed(() => {
     legend: {
       data: chartData.value.categories,
       textStyle: {
-        color: 'rgb(var(--color-base-content))'
+        color: textColor.value
       },
       type: 'scroll',
       bottom: 0
@@ -70,7 +67,7 @@ const chartOption = computed(() => {
       data: chartData.value.months,
       axisLine: {
         lineStyle: {
-          color: 'rgb(var(--color-base-content))'
+          color: textColor.value
         }
       }
     },
@@ -78,12 +75,12 @@ const chartOption = computed(() => {
       type: 'value',
       axisLine: {
         lineStyle: {
-          color: 'rgb(var(--color-base-content))'
+          color: textColor.value
         }
       },
       splitLine: {
         lineStyle: {
-          color: 'rgba(var(--color-base-content), 0.2)'
+          color: 'rgba(128, 128, 128, 0.2)'
         }
       }
     },

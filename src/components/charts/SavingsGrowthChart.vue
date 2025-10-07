@@ -17,7 +17,7 @@ import { LineChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { useDatabaseStore } from '@/stores/database';
-import { useTheme } from '@/composables/useTheme';
+import { useChartTheme } from '@/composables/useChartTheme';
 
 const props = defineProps<{
   rangeInMonths: number
@@ -33,7 +33,7 @@ use([
 ]);
 
 const databaseStore = useDatabaseStore();
-const { currentTheme } = useTheme();
+const { textColor, primaryColor } = useChartTheme();
 
 const chartData = computed(() => {
   return databaseStore.getSavingsHistory(props.rangeInMonths);
@@ -42,9 +42,6 @@ const chartData = computed(() => {
 const hasData = computed(() => chartData.value.data.length > 0 && chartData.value.data.some(d => d > 0));
 
 const chartOption = computed(() => {
-  // eslint-disable-next-line
-  const theme = currentTheme.value; // Ensures reactivity to theme changes
-
   return {
     tooltip: {
       trigger: 'axis'
@@ -61,7 +58,7 @@ const chartOption = computed(() => {
       data: chartData.value.labels,
       axisLine: {
         lineStyle: {
-          color: 'rgb(var(--color-base-content))'
+          color: textColor.value
         }
       }
     },
@@ -69,12 +66,12 @@ const chartOption = computed(() => {
       type: 'value',
       axisLine: {
         lineStyle: {
-          color: 'rgb(var(--color-base-content))'
+          color: textColor.value
         }
       },
       splitLine: {
         lineStyle: {
-          color: 'rgba(var(--color-base-content), 0.2)'
+          color: 'rgba(128, 128, 128, 0.2)'
         }
       }
     },
@@ -85,10 +82,10 @@ const chartOption = computed(() => {
         smooth: true,
         data: chartData.value.data,
         itemStyle: {
-          color: 'rgb(var(--color-primary))'
+          color: primaryColor.value
         },
         areaStyle: {
-          color: 'rgba(var(--color-primary), 0.1)'
+          color: primaryColor.value.replace(')', ', 0.1)').replace('hsl', 'hsla')
         }
       }
     ]
