@@ -168,11 +168,12 @@ const withdrawMoney = (jar: SavingsJar) => {
 
 const handleMoneyTransaction = (amount: number) => {
   if (selectedJar.value) {
-    const newAmount = isWithdrawing.value 
-      ? Math.max(0, selectedJar.value.currentAmount - amount)
-      : selectedJar.value.currentAmount + amount
-    
-    databaseStore.updateSavingsJar(selectedJar.value.id, { currentAmount: newAmount })
+    const transactionAmount = isWithdrawing.value ? -amount : amount;
+    if (isWithdrawing.value && selectedJar.value.currentAmount < amount) {
+      alert('No puedes retirar más de lo que tienes en el jarro.');
+    } else {
+      databaseStore.performJarTransaction(selectedJar.value.id, transactionAmount);
+    }
   }
   showMoneyModal.value = false
   selectedJar.value = null

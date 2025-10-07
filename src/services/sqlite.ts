@@ -1,5 +1,5 @@
 import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
-import type { Account, SavingsJar, Tag, Transaction } from '@/types';
+import type { Account, SavingsJar, SavingsJarTransaction, Tag, Transaction } from '@/types';
 
 class SQLiteService {
   private db: any = null;
@@ -27,6 +27,7 @@ class SQLiteService {
   }
 
   private createTables() {
+    this.db.exec('PRAGMA foreign_keys = ON;');
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS accounts (
         id TEXT PRIMARY KEY,
@@ -48,6 +49,14 @@ class SQLiteService {
         createdAt TEXT NOT NULL,
         icon TEXT,
         color TEXT
+      );
+      CREATE TABLE IF NOT EXISTS savings_jar_transactions (
+        id TEXT PRIMARY KEY,
+        jarId TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (jarId) REFERENCES savings_jars(id) ON DELETE CASCADE
       );
       CREATE TABLE IF NOT EXISTS tags (
         id TEXT PRIMARY KEY,
@@ -165,6 +174,9 @@ class SQLiteService {
   addSavingsJar = (data: Omit<SavingsJar, 'id'|'createdAt'>) => this.add('savings_jars', data);
   updateSavingsJar = (id: string, updates: Partial<SavingsJar>) => this.update('savings_jars', id, updates);
   deleteSavingsJar = (id: string) => this.delete('savings_jars', id);
+
+  getAllSavingsJarTransactions = (): SavingsJarTransaction[] => this.getAll('savings_jar_transactions');
+  addSavingsJarTransaction = (data: Omit<SavingsJarTransaction, 'id' | 'createdAt'>) => this.add('savings_jar_transactions', data);
 
   getAllTags = (): Tag[] => this.getAll('tags');
   addTag = (data: Omit<Tag, 'id'|'createdAt'>) => this.add('tags', data);

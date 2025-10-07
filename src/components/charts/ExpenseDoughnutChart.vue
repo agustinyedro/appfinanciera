@@ -17,6 +17,7 @@ import { PieChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { useDatabaseStore } from '@/stores/database';
+import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps<{
   type: 'ingreso' | 'gasto',
@@ -33,6 +34,7 @@ use([
 ]);
 
 const databaseStore = useDatabaseStore();
+const { currentTheme } = useTheme();
 
 const chartData = computed(() => {
   return databaseStore.getCategorizedDataForPeriod(props.type, props.year, props.month);
@@ -40,47 +42,52 @@ const chartData = computed(() => {
 
 const hasData = computed(() => chartData.value.length > 0);
 
-const chartOption = computed(() => ({
-  tooltip: {
-    trigger: 'item',
-    formatter: '{a} <br/>{b}: ${c} ({d}%)',
-  },
-  legend: {
-    orient: 'vertical',
-    left: 'left',
-    top: 'center',
-    textStyle: {
-      color: 'rgb(var(--color-base-content))'
-    }
-  },
-  series: [
-    {
-      name: props.type === 'gasto' ? 'Gastos' : 'Ingresos',
-      type: 'pie',
-      radius: ['50%', '70%'],
-      center: ['70%', '50%'],
-      avoidLabelOverlap: false,
-      itemStyle: {
-        borderRadius: 10,
-        borderColor: 'rgb(var(--color-base-100))',
-        borderWidth: 2,
-      },
-      label: {
-        show: false,
-        position: 'center',
-      },
-      emphasis: {
-        label: {
-          show: true,
-          fontSize: '20',
-          fontWeight: 'bold',
-        },
-      },
-      labelLine: {
-        show: false,
-      },
-      data: chartData.value,
+const chartOption = computed(() => {
+  // eslint-disable-next-line
+  const theme = currentTheme.value; // Ensures reactivity to theme changes
+
+  return {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: ${c} ({d}%)',
     },
-  ],
-}));
+    legend: {
+      orient: 'vertical',
+      left: 'left',
+      top: 'center',
+      textStyle: {
+        color: 'rgb(var(--color-base-content))'
+      }
+    },
+    series: [
+      {
+        name: props.type === 'gasto' ? 'Gastos' : 'Ingresos',
+        type: 'pie',
+        radius: ['50%', '70%'],
+        center: ['70%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: 'rgb(var(--color-base-100))',
+          borderWidth: 2,
+        },
+        label: {
+          show: false,
+          position: 'center',
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: '20',
+            fontWeight: 'bold',
+          },
+        },
+        labelLine: {
+          show: false,
+        },
+        data: chartData.value,
+      },
+    ],
+  }
+});
 </script>

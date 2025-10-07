@@ -95,12 +95,12 @@ const form = ref({
 })
 
 const predefinedAvatars = [
-  'https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/60A5FA/FFFFFF/png?text=A',
-  'https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/F87171/FFFFFF/png?text=B',
-  'https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/4ADE80/FFFFFF/png?text=C',
-  'https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/FBBF24/FFFFFF/png?text=D',
-  'https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/A78BFA/FFFFFF/png?text=E',
-  'https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/2DD4BF/FFFFFF/png?text=F',
+  'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/60A5FA/FFFFFF/png?text=A',
+  'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/F87171/FFFFFF/png?text=B',
+  'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/4ADE80/FFFFFF/png?text=C',
+  'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/FBBF24/FFFFFF/png?text=D',
+  'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/A78BFA/FFFFFF/png?text=E',
+  'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/2DD4BF/FFFFFF/png?text=F',
 ]
 
 const saveUser = () => {

@@ -9,7 +9,7 @@ interface User {
 
 const defaultUser: User = {
   name: 'Usuario',
-  avatarUrl: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/3B82F6/FFFFFF/png?text=U'
+  avatarUrl: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/150x150/3B82F6/FFFFFF/png?text=U'
 }
 
 const user = ref<User>(defaultUser)

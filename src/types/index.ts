@@ -21,6 +21,14 @@ export interface SavingsJar {
   color?: string;
 }
 
+export interface SavingsJarTransaction {
+  id:string;
+  jarId: string;
+  amount: number; // positive for deposit, negative for withdrawal
+  date: string;
+  createdAt: string;
+}
+
 export interface Tag {
   id: string;
   name: string;
